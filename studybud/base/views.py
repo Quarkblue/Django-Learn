@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Room, Topic
+from .models import Room, Topic, Message
 from .forms import RoomForm
 from django.db.models import Q
 from django.contrib.auth.models import User
@@ -17,8 +17,7 @@ from django.contrib.auth.forms import UserCreationForm
 # ]
 
 
-######## LEFT AT 3:00
-
+## LEFT AT 3:13
 
 
 def loginPage(request):
@@ -91,7 +90,18 @@ def home(request):
 
 def room(request, pk):
     room = Room.objects.get(id=pk)
-    context = {'room': room}
+    room_messages = room.message_set.all().order_by('-created')
+    
+    if request.method == 'POST':
+        message = Message.objects.create(
+            user = request.user,
+            room = room,
+            body = request.POST.get('body'), # body is the name of the input field in the form
+        )
+        return redirect('room', pk=room.pk)
+    
+    
+    context = {'room': room, "room_messages": room_messages}
     return render(request, 'base/room.html', context)
 
 
